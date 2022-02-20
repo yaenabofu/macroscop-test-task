@@ -63,7 +63,7 @@ namespace client
         public void StartMessageManager(Request request)
         {
             Request incomingRequest = new Request();
-            Task.Run(() =>
+            Thread thread = new Thread(() =>
            {
                try
                {
@@ -77,18 +77,27 @@ namespace client
                }
                catch (Exception)
                {
-                   Invoke((Action)(() =>
+                   try
                    {
-                       btnAddFile.Enabled = false;
-                       btnSendFiles.Enabled = false;
-                       btnConnect.Text = "Подключиться к серверу";
-                   }));
+                       Invoke((Action)(() =>
+                                         {
+                                             btnAddFile.Enabled = false;
+                                             btnSendFiles.Enabled = false;
+                                             btnConnect.Text = "Подключиться к серверу";
+                                         }));
+                   }
+                   catch (Exception)
+                   {
+
+                   }
+
 
                    stream.Close();
                    client.Close();
                    MessageBox.Show("Сервер разорвал соединение");
                }
            });
+            thread.Start();
         }
         public static Request ReadMessage(NetworkStream stream)
         {
