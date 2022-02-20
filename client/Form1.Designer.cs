@@ -34,6 +34,7 @@
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAddFile = new System.Windows.Forms.Button();
             this.btnSendFiles = new System.Windows.Forms.Button();
+            this.btnConnect = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -77,9 +78,9 @@
             // 
             // btnAddFile
             // 
-            this.btnAddFile.Location = new System.Drawing.Point(12, 8);
+            this.btnAddFile.Location = new System.Drawing.Point(238, 8);
             this.btnAddFile.Name = "btnAddFile";
-            this.btnAddFile.Size = new System.Drawing.Size(361, 23);
+            this.btnAddFile.Size = new System.Drawing.Size(243, 23);
             this.btnAddFile.TabIndex = 1;
             this.btnAddFile.Text = "Добавить файл";
             this.btnAddFile.UseVisualStyleBackColor = true;
@@ -87,19 +88,30 @@
             // 
             // btnSendFiles
             // 
-            this.btnSendFiles.Location = new System.Drawing.Point(379, 8);
+            this.btnSendFiles.Location = new System.Drawing.Point(487, 8);
             this.btnSendFiles.Name = "btnSendFiles";
-            this.btnSendFiles.Size = new System.Drawing.Size(409, 23);
+            this.btnSendFiles.Size = new System.Drawing.Size(301, 23);
             this.btnSendFiles.TabIndex = 2;
             this.btnSendFiles.Text = "Отправить файлы";
             this.btnSendFiles.UseVisualStyleBackColor = true;
             this.btnSendFiles.Click += new System.EventHandler(this.btnSendFiles_Click);
+            // 
+            // btnConnect
+            // 
+            this.btnConnect.Location = new System.Drawing.Point(12, 8);
+            this.btnConnect.Name = "btnConnect";
+            this.btnConnect.Size = new System.Drawing.Size(220, 23);
+            this.btnConnect.TabIndex = 3;
+            this.btnConnect.Text = "Подключиться к серверу";
+            this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.btnSendFiles);
             this.Controls.Add(this.btnAddFile);
             this.Controls.Add(this.dataGridView1);
@@ -121,6 +133,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.Button btnAddFile;
         private System.Windows.Forms.Button btnSendFiles;
+        private System.Windows.Forms.Button btnConnect;
     }
 }
 

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using client;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,27 +18,38 @@ namespace server
         public const int PORT = 8080;
         static void Main(string[] args)
         {
-            Console.Write("N: ");
-            int N = int.Parse(Console.ReadLine());
-
+            //Console.Write("N: ");
+            //int N = int.Parse(Console.ReadLine());
+            //Semaphore sem = new Semaphore(N, N);
             try
             {
                 server = new TcpListener(IPAddress.Parse(IP), PORT);
                 server.Start();
-                Console.WriteLine("\nWaiting for connections...\n");
+                Console.WriteLine("Waiting for connections...\n");
 
                 while (true)
                 {
-                    Thread.Sleep(100);
                     TcpClient client = server.AcceptTcpClient();
-                    try
+                    NetworkStream stream = client.GetStream();
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} подключился");
+
+                    while (client.Connected)
                     {
-                        Task task = new Task(() => { StartMessageHandler(client); });
-                        task.Start();
+                        try
+                        {
+
+                            Task task = new Task(() => { StartMessageHandler(stream, client); });
+                            task.Start();
+                        }
+                        catch (Exception)
+                        {
+
+                        }
                     }
-                    catch (Exception)
-                    {
-                    }
+
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} отключился");
+                    stream.Close();
+                    client.Close();
                 }
             }
             catch (Exception)
@@ -45,64 +58,61 @@ namespace server
             }
         }
 
-        public static void StartMessageHandler(TcpClient client)
+        public static void StartMessageHandler(NetworkStream stream, TcpClient client)
         {
-            NetworkStream stream = client.GetStream();
-
-            if (acceptedUsers.Where(x => x.Nickname == user.Nickname).Count() == 0)
+            try
             {
-                SendMessage("true", user);
-                acceptedUsers.Add(user);
-                SendMessageToEveryone($"[{DateTime.Now.ToShortTimeString()}] {user.Nickname} connected" + "\n");
-                Console.WriteLine($"[{DateTime.Now.ToShortTimeString()}] {user.Nickname} connected" + "\n");
-
-                string incomingMessage = null;
-                while (user.Client.Connected)
+                Request receivedRequest = ReadMessage(stream, client);
+                if (receivedRequest != null)
                 {
-                    try
-                    {
-                        incomingMessage = ReadMessage(user) + "\n";
-                        if (incomingMessage != "\n")
-                            Console.WriteLine(incomingMessage);
-                        SendMessageToEveryone(incomingMessage);
-                    }
-                    catch (Exception)
-                    {
-                        stream.Close();
-                        client.Close();
-                        acceptedUsers.Remove(user);
-                        Console.WriteLine($"[{DateTime.Now.ToShortTimeString()}] (*_*) {user.Nickname} disconnected (*_*)" + "\n");
-                    }
+                    string answer = IsPalindrome(receivedRequest.Message);
+                    receivedRequest.Status = answer;
+                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id}][{receivedRequest.Message}][{answer}]");
+                    SendMessage(stream, receivedRequest, client);
                 }
             }
-            else
+            catch (Exception)
             {
-                SendMessage("false", user);
-                stream.Close();
-                client.Close();
+
+            }
+        }
+        public static string IsPalindrome(string str)
+        {
+            if (str.Length < 2)
+            {
+                return "Не палиндром";
             }
 
+            for (int i = 0; i < str.Length / 2; i++)
+            {
+                if (str[i] != str[str.Length - i - 1])
+                    return "Не палиндром";
+            }
+
+            return "Палиндром";
         }
-        public static string ReadMessage(User user)
+        public static Request ReadMessage(NetworkStream stream, TcpClient client)
         {
+            StringBuilder completeMessage = new StringBuilder();
+
             int bytes = 0;
             byte[] data = new byte[256];
-            StringBuilder completeMessage = new StringBuilder();
 
             do
             {
-                bytes = user.Stream.Read(data, 0, data.Length);
+                bytes = stream.Read(data, 0, data.Length);
                 completeMessage.AppendFormat("{0}", Encoding.UTF8.GetString(data, 0, bytes));
             }
-            while (user.Stream.DataAvailable);
+            while (stream.DataAvailable);
 
-            return completeMessage.ToString();
+            return JsonConvert.DeserializeObject<Request>(completeMessage.ToString());
         }
-        public static void SendMessage(string message, User user)
+        public static void SendMessage(NetworkStream stream, Request request, TcpClient client)
         {
             byte[] data = new byte[256];
-            data = Encoding.UTF8.GetBytes(message);
-            user.Stream.Write(data, 0, data.Length);
+            string json = JsonConvert.SerializeObject(request);
+            data = Encoding.UTF8.GetBytes(json);
+            stream.Write(data, 0, data.Length);
         }
     }
 }

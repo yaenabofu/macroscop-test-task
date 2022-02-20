@@ -10,17 +10,17 @@ namespace client
     {
         private int id;
         private string message;
-        private string answer;
+        private string status;
 
         public int Id
         {
             get { return id; }
             set { id = value; }
         }
-        public string Answer
+        public string Status
         {
-            get { return answer; }
-            set { answer = value; }
+            get { return status; }
+            set { status = value; }
         }
         public string Message
         {
@@ -30,13 +30,13 @@ namespace client
         public Request()
         {
             id = 0;
-            answer = string.Empty;
+            status = string.Empty;
             message = string.Empty;
         }
-        public Request(int id, string asnwer, string message)
+        public Request(int id, string status, string message)
         {
             Id = id;
-            Answer = asnwer;
+            Status = status;
             Message = message;
         }
     }
