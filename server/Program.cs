@@ -33,20 +33,27 @@ namespace server
                     NetworkStream stream = client.GetStream();
                     Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} подключился");
 
-                    try
+                    Thread thread = new Thread(() =>
                     {
-                        while (client.Connected)
+                        try
                         {
-                            Thread thread = new Thread(() => { StartMessageHandler(stream, client); });
-                            thread.Start();
+                            while (client.Connected)
+                            {
+                                Thread thread2 = new Thread(() =>
+                                {
+                                    StartMessageHandler(stream, client);
+                                });
+                                thread2.Start();
+                            }
                         }
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} отключился");
-                        stream.Close();
-                        client.Close();
-                    }
+                        catch (Exception)
+                        {
+                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} отключился");
+                            stream.Close();
+                            client.Close();
+                        }
+                    });
+                    thread.Start();
                 }
             }
             catch (Exception)
