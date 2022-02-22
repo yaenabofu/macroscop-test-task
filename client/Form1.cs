@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MessageHandler;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -71,8 +72,8 @@ namespace client
                    client = new TcpClient();
                    client.Connect(IP, PORT);
                    stream = client.GetStream();
-                   SendMessage(stream, request);
-                   incomingRequest = ReadMessage(stream);
+                   MessageHandler.MessageHandler.SendMessage(stream, request);
+                   incomingRequest = MessageHandler.MessageHandler.ReadMessage(stream);
                    Invoke((Action)(() =>
                    {
                        dataGridView1.Rows[incomingRequest.Id].Cells[2].Value = incomingRequest.Status;
@@ -95,29 +96,6 @@ namespace client
                }
            });
             thread.Start();
-        }
-        public static Request ReadMessage(NetworkStream stream)
-        {
-            StringBuilder completeMessage = new StringBuilder();
-
-            int bytes = 0;
-            byte[] data = new byte[256];
-
-            do
-            {
-                bytes = stream.Read(data, 0, data.Length);
-                completeMessage.AppendFormat("{0}", Encoding.UTF8.GetString(data, 0, bytes));
-            }
-            while (stream.DataAvailable);
-
-            return JsonConvert.DeserializeObject<Request>(completeMessage.ToString());
-        }
-        public static void SendMessage(NetworkStream stream, Request request)
-        {
-            byte[] data = new byte[256];
-            string json = JsonConvert.SerializeObject(request);
-            data = Encoding.UTF8.GetBytes(json);
-            stream.Write(data, 0, data.Length);
         }
 
         private void btnSendFiles_Click(object sender, EventArgs e)

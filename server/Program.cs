@@ -1,4 +1,4 @@
-﻿using client;
+﻿using MessageHandler;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -59,12 +59,12 @@ namespace server
             }
             catch (Exception)
             {
-
+                server.Stop();
             }
         }
         public static void StartMessageHandler(NetworkStream stream, TcpClient client)
         {
-            Request receivedRequest = ReadMessage(stream, client);
+            Request receivedRequest = MessageHandler.MessageHandler.ReadMessage(stream);
 
             if (receivedRequest != null)
             {
@@ -72,7 +72,7 @@ namespace server
                 Thread.Sleep(1000);
                 receivedRequest.Status = answer;
                 Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id}][{receivedRequest.Message}][{answer}]");
-                SendMessage(stream, receivedRequest, client);
+                MessageHandler.MessageHandler.SendMessage(stream, receivedRequest);
             }
         }
         public static string IsPalindrome(string str)
@@ -89,33 +89,6 @@ namespace server
             }
 
             return "Палиндром";
-        }
-        public static Request ReadMessage(NetworkStream stream, TcpClient client)
-        {
-            StringBuilder completeMessage = new StringBuilder();
-
-            int bytes = 0;
-            byte[] data = new byte[256];
-
-            do
-            {
-                bytes = stream.Read(data, 0, data.Length);
-                completeMessage.AppendFormat("{0}", Encoding.UTF8.GetString(data, 0, bytes));
-            }
-            while (stream.DataAvailable);
-
-            return JsonConvert.DeserializeObject<Request>(completeMessage.ToString());
-        }
-        public static void SendMessage(NetworkStream stream, Request request, TcpClient client)
-        {
-            byte[] data = new byte[256];
-            string json = JsonConvert.SerializeObject(request);
-            data = Encoding.UTF8.GetBytes(json);
-
-            if (data.Length == 0)
-                return;
-
-            stream.Write(data, 0, data.Length);
         }
     }
 }

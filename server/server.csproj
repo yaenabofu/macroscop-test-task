@@ -54,9 +54,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\client\client.csproj">
-      <Project>{267E53A7-178B-4E63-A755-B9E4CBA9D37F}</Project>
-      <Name>client</Name>
+    <ProjectReference Include="..\MessageHandler\MessageClassLib.csproj">
+      <Project>{8e285400-9249-4e74-86b5-09260f36d403}</Project>
+      <Name>MessageClassLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
