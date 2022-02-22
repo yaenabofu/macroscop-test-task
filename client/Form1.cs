@@ -20,7 +20,6 @@ namespace client
         {
             InitializeComponent();
             btnSendFiles.Enabled = false;
-            btnAddFile.Enabled = false;
         }
         public const int PORT = 8080;
         public const string IP = "127.0.0.1";
@@ -60,14 +59,18 @@ namespace client
             id++;
         }
 
-        public void StartMessageManager(Request request)
+        public void StartMessageManager(Request request, NetworkStream stream, TcpClient client)
         {
-            Request incomingRequest = new Request();
+            Request incomingRequest = request;
             Thread thread = new Thread(() =>
            {
                try
                {
-                   Thread.Sleep(1000);
+                   btnSendFiles.Enabled = false;
+                   btnAddFile.Enabled = true;
+                   client = new TcpClient();
+                   client.Connect(IP, PORT);
+                   stream = client.GetStream();
                    SendMessage(stream, request);
                    incomingRequest = ReadMessage(stream);
                    Invoke((Action)(() =>
@@ -77,24 +80,18 @@ namespace client
                }
                catch (Exception)
                {
-                   try
+
+                   Invoke((Action)(() =>
                    {
-                       Invoke((Action)(() =>
-                                         {
-                                             btnAddFile.Enabled = false;
-                                             btnSendFiles.Enabled = false;
-                                             btnConnect.Text = "Подключиться к серверу";
-                                         }));
-                   }
-                   catch (Exception)
-                   {
-
-                   }
-
-
-                   stream.Close();
-                   client.Close();
-                   MessageBox.Show("Сервер разорвал соединение");
+                       dataGridView1.Rows[incomingRequest.Id].Cells[2].Value = "Ошибка при обработке запроса";
+                   }));
+               }
+               finally
+               {
+                   if (stream != null)
+                       stream.Close();
+                   if (client != null)
+                       client.Close();
                }
            });
             thread.Start();
@@ -132,17 +129,7 @@ namespace client
                 {
                     int dgw_id = int.Parse(dataGridView1.Rows[i].Cells[0].Value.ToString()) - 1;
                     string dgw_message = dataGridView1.Rows[i].Cells[1].Value.ToString();
-                    try
-                    {
-                        StartMessageManager(new Request(dgw_id, "", dgw_message));
-                    }
-                    catch (Exception)
-                    {
-                        Invoke((Action)(() =>
-                        {
-                            dataGridView1.Rows[dgw_id].Cells[2].Value = "Ошибка при обработке запроса";
-                        }));
-                    }
+                    StartMessageManager(new Request(dgw_id, "", dgw_message), stream, client);
                 }
             }
         }
@@ -151,34 +138,6 @@ namespace client
         {
             if (dataGridView1.Rows.Count > 0)
                 this.btnSendFiles.Enabled = true;
-        }
-
-        private void btnConnect_Click(object sender, EventArgs e)
-        {
-            if (!client.Connected)
-            {
-                try
-                {
-                    client = new TcpClient();
-                    client.Connect(IP, PORT);
-                    stream = client.GetStream();
-                    btnAddFile.Enabled = true;
-                    btnConnect.Text = "Отключиться от сервера";
-                    MessageBox.Show("Успешное подключение к серверу");
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Не удалось подключиться к серверу");
-                }
-            }
-            else
-            {
-                btnAddFile.Enabled = false;
-                btnSendFiles.Enabled = false;
-                btnConnect.Text = "Подключиться к серверу";
-                stream.Close();
-                client.Close();
-            }
         }
     }
 }

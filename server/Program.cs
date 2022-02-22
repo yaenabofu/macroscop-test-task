@@ -18,9 +18,14 @@ namespace server
         public const int PORT = 8080;
         static void Main(string[] args)
         {
-            //Console.Write("N: ");
-            //int N = int.Parse(Console.ReadLine());
+            //int N = 0;
+            //do
+            //{
+            //    Console.Write("N: ");
+            //} while (!int.TryParse(Console.ReadLine(), out N));
+
             //Semaphore sem = new Semaphore(N, N);
+
             try
             {
                 server = new TcpListener(IPAddress.Parse(IP), PORT);
@@ -31,26 +36,22 @@ namespace server
                 {
                     TcpClient client = server.AcceptTcpClient();
                     NetworkStream stream = client.GetStream();
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} подключился");
 
                     Thread thread = new Thread(() =>
                     {
                         try
                         {
-                            while (client.Connected)
-                            {
-                                Thread thread2 = new Thread(() =>
-                                {
-                                    StartMessageHandler(stream, client);
-                                });
-                                thread2.Start();
-                            }
+                            StartMessageHandler(stream, client);
                         }
                         catch (Exception)
                         {
-                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} отключился");
-                            stream.Close();
-                            client.Close();
+                        }
+                        finally
+                        {
+                            if (stream != null)
+                                stream.Close();
+                            if (client != null)
+                                client.Close();
                         }
                     });
                     thread.Start();
@@ -61,23 +62,17 @@ namespace server
 
             }
         }
-
         public static void StartMessageHandler(NetworkStream stream, TcpClient client)
         {
-            try
-            {
-                Request receivedRequest = ReadMessage(stream, client);
-                if (receivedRequest != null)
-                {
-                    string answer = IsPalindrome(receivedRequest.Message);
-                    receivedRequest.Status = answer;
-                    Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id}][{receivedRequest.Message}][{answer}]");
-                    SendMessage(stream, receivedRequest, client);
-                }
-            }
-            catch (Exception)
-            {
+            Request receivedRequest = ReadMessage(stream, client);
 
+            if (receivedRequest != null)
+            {
+                string answer = IsPalindrome(receivedRequest.Message);
+                Thread.Sleep(1000);
+                receivedRequest.Status = answer;
+                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id}][{receivedRequest.Message}][{answer}]");
+                SendMessage(stream, receivedRequest, client);
             }
         }
         public static string IsPalindrome(string str)
@@ -116,6 +111,10 @@ namespace server
             byte[] data = new byte[256];
             string json = JsonConvert.SerializeObject(request);
             data = Encoding.UTF8.GetBytes(json);
+
+            if (data.Length == 0)
+                return;
+
             stream.Write(data, 0, data.Length);
         }
     }
