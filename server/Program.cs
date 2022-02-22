@@ -13,41 +13,62 @@ namespace server
 {
     internal class Program
     {
-        public static TcpListener server;
         public const string IP = "127.0.0.1";
         public const int PORT = 8080;
+        public static TcpListener server;
         static void Main(string[] args)
         {
-            //int N = 0;
-            //do
-            //{
-            //    Console.Write("N: ");
-            //} while (!int.TryParse(Console.ReadLine(), out N));
+            int N = 0;
+            bool res = false;
 
-            //Semaphore sem = new Semaphore(N, N);
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Максимальное количество одновременно обрабатываемых запросов должно быть целым числом и больше 0");
+                Console.Write("N: ");
+                string input = Console.ReadLine();
+                if (int.TryParse(input, out N) && N > 0)
+                    res = true;
+            } while (!res);
+
+            SemaphoreSlim semSlim = new SemaphoreSlim(N, N);
 
             try
             {
                 server = new TcpListener(IPAddress.Parse(IP), PORT);
                 server.Start();
-                Console.WriteLine("Waiting for connections...\n");
-
+                Console.WriteLine("\nФормат выводимых данных: [Время получения запроса] [IP адрес клиента] [Индекс записи в таблице] [Сообщение] [Статус]");
+                Console.WriteLine("Ожидание подключений...\n");
                 while (true)
                 {
                     TcpClient client = server.AcceptTcpClient();
                     NetworkStream stream = client.GetStream();
-
                     Thread thread = new Thread(() =>
                     {
-                        try
+                        if (semSlim.CurrentCount > 0)
                         {
-                            StartMessageHandler(stream, client);
+                            semSlim.Wait();
+                            try
+                            {
+                                StartMessageHandler(stream, client);
+                                Thread.Sleep(5000);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            finally
+                            {
+                                if (stream != null)
+                                    stream.Close();
+                                if (client != null)
+                                    client.Close();
+                            }
+
+                            semSlim.Release();
                         }
-                        catch (Exception)
+                        else
                         {
-                        }
-                        finally
-                        {
+                            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [-] [-] [Запрос не был обработан. Количество запросов превышено!]");
                             if (stream != null)
                                 stream.Close();
                             if (client != null)
@@ -65,15 +86,10 @@ namespace server
         public static void StartMessageHandler(NetworkStream stream, TcpClient client)
         {
             Request receivedRequest = MessageHandler.MessageHandler.ReadMessage(stream);
-
-            if (receivedRequest != null)
-            {
-                string answer = IsPalindrome(receivedRequest.Message);
-                Thread.Sleep(1000);
-                receivedRequest.Status = answer;
-                Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id}][{receivedRequest.Message}][{answer}]");
-                MessageHandler.MessageHandler.SendMessage(stream, receivedRequest);
-            }
+            string answer = IsPalindrome(receivedRequest.Message);
+            receivedRequest.Status = answer;
+            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss tt")} {client.Client.RemoteEndPoint} [{receivedRequest.Id + 1}] [{receivedRequest.Message}] [{answer}]");
+            MessageHandler.MessageHandler.SendMessage(stream, receivedRequest);
         }
         public static string IsPalindrome(string str)
         {

@@ -84,7 +84,7 @@ namespace client
 
                    Invoke((Action)(() =>
                    {
-                       dataGridView1.Rows[incomingRequest.Id].Cells[2].Value = "Ошибка при обработке запроса";
+                       dataGridView1.Rows[incomingRequest.Id].Cells[2].Value = "Ошибка при отправке/обработке запроса";
                    }));
                }
                finally
