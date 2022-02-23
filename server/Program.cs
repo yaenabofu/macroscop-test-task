@@ -15,6 +15,8 @@ namespace server
         private const string IP = "127.0.0.1";
         private const int PORT = 8080;
         private static TcpListener server;
+        private static char[] charSeparators = new char[] {' ', ',', '.', '"', '<', '>', '/', ':', ';', '{', '}', '[', ']', '-', '=', '+', '_', '|', '*', '%',
+                '!', '@', '#', '№', '^', '&', '?', '(', ')'};
         private static void Main(string[] args)
         {
             int MaxNumberOfRequests = 0;
@@ -50,7 +52,7 @@ namespace server
                             try
                             {
                                 StartMessageHandler(stream, client);
-                                Thread.Sleep(5000);
+                                Thread.Sleep(2000);
                             }
                             catch (Exception)
                             {
@@ -92,8 +94,6 @@ namespace server
         }
         private static string IsPalindrome(string inputString)
         {
-            char[] charSeparators = new char[] {' ', ',', '.', '"', '<', '>', '/', ':', ';', '{', '}', '[', ']', '-', '=', '+', '_', '|', '*', '%',
-                '!', '@', '#', '№', '^', '&', '?', '(', ')'};
             string[] result = inputString.Split(charSeparators, StringSplitOptions.RemoveEmptyEntries);
             string afterFormating = string.Join("", result).ToLower();
 
