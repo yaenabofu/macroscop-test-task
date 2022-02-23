@@ -46,16 +46,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="RequestsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="RequestsForm.Designer.cs">
+      <DependentUpon>RequestsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="RequestsForm.resx">
+      <DependentUpon>RequestsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -84,6 +84,16 @@
       <Project>{8e285400-9249-4e74-86b5-09260f36d403}</Project>
       <Name>MessageClassLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Tests\test1.txt" />
+    <Content Include="Tests\test2.txt" />
+    <Content Include="Tests\test3.txt" />
+    <Content Include="Tests\test4.txt" />
+    <Content Include="Tests\test5.txt" />
+    <Content Include="Tests\test6.txt" />
+    <Content Include="Tests\test7.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

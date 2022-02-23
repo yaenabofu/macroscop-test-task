@@ -14,18 +14,18 @@ using System.Windows.Forms;
 
 namespace client
 {
-    public partial class Form1 : Form
+    internal partial class RequestsForm : Form
     {
-        public Form1()
+        private const int PORT = 8080;
+        private const string IP = "127.0.0.1";
+        private TcpClient client = new TcpClient();
+        private NetworkStream stream = null;
+        private int row_id = 0;
+        internal RequestsForm()
         {
             InitializeComponent();
             btnSendFiles.Enabled = false;
         }
-        public const int PORT = 8080;
-        public const string IP = "127.0.0.1";
-        public TcpClient client = new TcpClient();
-        public NetworkStream stream = null;
-        public int id = 0;
 
         private void btnAddFile_Click(object sender, EventArgs e)
         {
@@ -54,12 +54,12 @@ namespace client
                 }
             }
 
-            dataGridView1.Rows.Add(id + 1, fileContent, "Не отправлено");
-            dataGridView1.Rows[id].Tag = id;
-            id++;
+            dataGridView1.Rows.Add(row_id + 1, fileContent, "Не отправлено");
+            dataGridView1.Rows[row_id].Tag = row_id;
+            row_id++;
         }
 
-        public void StartMessageManager(Request request, NetworkStream stream, TcpClient client)
+        private void StartMessageManager(Request request, NetworkStream stream, TcpClient client)
         {
             Request incomingRequest = request;
             Thread thread = new Thread(() =>

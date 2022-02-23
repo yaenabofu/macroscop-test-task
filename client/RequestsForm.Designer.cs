@@ -1,6 +1,6 @@
 ﻿namespace client
 {
-    partial class Form1
+    partial class RequestsForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
